@@ -1,0 +1,38 @@
+* ECG Frontend — Day 005
+* Simple annotated SPICE-like netlist for reference and quick simulation
+
+* Nodes: IN, OUT, VCC, GND
+
+* Input source (simulated electrode)
+V1 IN 0 SIN(0 0.001 1)
+
+* Input protection and bias
+Rbias IN BIAS 10MEG
+Rprotect IN PROT 1K
+D1 IN 0 DPROT
+D2 0 IN DPROT
+
+* High-pass (AC coupling) - single-pole ~0.5 Hz
+Ccouple IN HP_IN 3.3u
+Rhp HP_IN 0 1M
+
+* First gain stage (non-inverting)
+* U1 is an op amp macro (use ideal or substitute model in simulator)
+XU1 HP_IN 0 VOUT_OP1 opamp
+Rfb1 VOUT_OP1 NEG_FB 100k
+Rin1 NEG_FB 0 10k
+
+* Second stage: 2nd-order low-pass (Sallen-Key style)
+Rsk1 VOUT_OP1 SK_IN 10k
+Csk1 SK_IN 0 0.39u
+Rsk2 SK_IN 0 10k
+Csk2 VOUT_LP 0 0.39u
+XU2 VOUT_OP1 0 OUT opamp
+
+* Output buffer
+Rload OUT 0 100k
+
+.tran 5m 2
+.end
+
+* Notes: replace 'opamp' subckt with a real model for accurate noise and offset behavior.
