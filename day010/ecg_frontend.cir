@@ -1,0 +1,24 @@
+* Comparator threshold demo — EdgeNode Sense
+.param VTH=1.65
+* Signal source (example transient)
+Vin VIN 0 PULSE(0 3.3 0 1u 1u 1m 2m)
+
+VCC VCC 0 DC 3.3
+Cdec VCC 0 10u
+
+* Simple comparator with hysteresis (positive feedback)
+R1 VREF 0 100k
+Vref VREF 0 DC {VTH}
+Rpos OUT VFB 200k
+Rneg VFB VREF 200k
+* Ideal comparator model
+Ecomp OUT 0 VIN VFB 100
+
+* Output can drive a latch or wake line
+Rload OUT 0 10k
+
+.tran 0 0.01
+.control
+run
+.endc
+.end

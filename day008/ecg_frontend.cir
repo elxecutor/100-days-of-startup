@@ -1,0 +1,39 @@
+* Precision front-end demo — OPA333 (3.3 V single-supply)
+.param FHB=1.2 AmpHB=500u FNOISE=50 AmpNOISE=200u
+* Signal source: heartbeat (1.2 Hz) + small motion noise (50 Hz)
+Bsig VIN 0 V=AmpHB*sin(2*pi*FHB,time) + AmpNOISE*sin(2*pi*FNOISE,time)
+
+* Power rails
+VCC VCC 0 DC 3.3
+Cdec VCC 0 10u
+
+* Mid-rail reference for single-supply bias
+Rref1 VCC VREF 100k
+Rref2 VREF 0 100k
+Cref VREF 0 10u
+
+* Input coupling (AC-couple to mid-rail)
+C1 VIN NIN 1u
+Rbias NIN VREF 318k  ; fc ~= 0.5 Hz
+
+* Non-inverting precision preamp (gain ≈ 20)
+* Replace 'OPA333' subckt with vendor model for realistic noise/offset
+XU1 NIN VREF OUT 0 OPA333
+Rin NIN VREF 10k
+Rfb OUT VREF 190k  ; sets gain ~1 + Rfb/Rin ≈ 20
+
+* Output anti-aliasing ~100 Hz
+Rlp OUT VOUT 33k
+Clp VOUT VREF 48n   ; fc ~= 100 Hz
+
+Cout VOUT ADC_IN 1u
+Radc ADC_IN 0 100k
+
+.ac dec 100 0.1 100k
+.tran 0 2
+
+.control
+run
+* Use vendor OPA333 subckt and run .noise + .tran for realistic validation
+.endc
+.end

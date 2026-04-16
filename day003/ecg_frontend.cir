@@ -1,0 +1,59 @@
+* Bridge-sensor front-end demo — AD8226-style instrumentation amp
+.param SINEF=1.0 AMP=1m
+* Example Wheatstone bridge excitation and INA readout
+VEX VEX 0 DC 3.3
+R1 VEX NODE1 10k
+R2 NODE1 NODE2 10k
+R3 NODE2 NODE4 10k
+R4 NODE4 0 10k
+* INA stage (replace with AD8226 subckt for realism)
+EINA OUT 0 NODE1 NODE2 1000
+RLOAD OUT 0 100k
+.control
+run
+.endc
+* Day 003 note: Example shows Wheatstone bridge + INA-style front-end for low-level sensor signals.
+.end
+
+* ECG front-end demo — tuned for Cadence EdgeNode (5 V single-supply)
+.param FHB=1.2 AmpHB=1m FNOISE=50 AmpNOISE=1m
+* Signal source: heartbeat (1.2 Hz) + mains hum (50 Hz)
+Bsig VIN 0 V=AmpHB*sin(2*pi*FHB*time) + AmpNOISE*sin(2*pi*FNOISE*time)
+
+* Power rails (Cadence EdgeNode typical 5 V supply)
+VCC VCC 0 DC 5
+Cdec VCC 0 10u
+
+* Mid-rail reference for single-supply bias
+Rref1 VCC VREF 100k
+Rref2 VREF 0 100k
+Cref VREF 0 10u
+
+* Input coupling (AC-couple to mid-rail)
+C1 VIN NIN 1u
+Rbias NIN VREF 318k  ; fc ~= 0.5 Hz (1/(2πRC))
+
+* Simple non-inverting preamp (closed-loop gain ≈ 100)
+* NOTE: Using an ideal VCVS for rapid prototyping — replace E1 with a vendor op-amp subckt (tie its rails to VCC and 0) for realistic swing, noise and input limitations.
+E1 OUT 0 NIN NNEG 1e5
+Rfb OUT NNEG 99k
+Rin NNEG VREF 1k    ; bias negative input at mid-rail
+
+* Output anti-aliasing (first-order) around mid-rail
+Rlp OUT VOUT 10k
+Clp VOUT VREF 106n   ; fc ~= 150 Hz
+
+* AC-couple to ADC input (if ADC expects 0..VCC single-ended input)
+Cout VOUT ADC_IN 1u
+Radc ADC_IN 0 100k   ; pull to ground; adapt per ADC input requirements
+
+.ac dec 100 0.1 100k
+.tran 0 2
+
+.control
+run
+* AC: plot vdb(ADC_IN) to view gain (dB) at the ADC input
+* TRANS: plot v(ADC_IN) to view heartbeat + noise waveform as seen by the ADC
+* For realistic validation: replace E1 with vendor op-amp subckt and run .noise + .tran analyses
+.endc
+.end

@@ -1,0 +1,29 @@
+* Piezo charge-amplifier demo — EdgeNode Vibe
+.param FIMP=100 AmpIMP=1m
+* Piezo modeled as current impulse into virtual ground amplifier
+Ipiezo NIN 0 PULSE(0 AmpIMP 0 1u 1u 1m 2m)
+
+* Power rails (3.3 V logic for EdgeNode)
+VCC VCC 0 DC 3.3
+Cdec VCC 0 10u
+
+* Virtual-ground reference
+Rref1 VCC VREF 100k
+Rref2 VREF 0 100k
+Cref VREF 0 10u
+
+* Charge amplifier: feedback capacitor converts charge→voltage
+XU1 NIN VREF OUT 0 CHARGE_AMP
+Cfb OUT NNEG 1p
+Rfb OUT NNEG 1G   ; slow reset path for DC restoration
+
+* Simple peak detector for event capture
+D1 OUT PD 1N4148
+Cp PD VREF 10n
+
+.tran 0 0.1
+.control
+run
+* Replace CHARGE_AMP subckt with vendor model for realistic behavior
+.endc
+.end

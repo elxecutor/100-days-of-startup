@@ -1,0 +1,33 @@
+* High-speed front-end demo — tuned for wider band (5 V)
+.param FHB=1.2 AmpHB=1m FNOISE=50 AmpNOISE=1m
+* Signal: heartbeat + noise (placeholder for transient events)
+Bsig VIN 0 V=AmpHB*sin(2*pi*FHB,time) + AmpNOISE*sin(2*pi*FNOISE,time)
+
+VCC VCC 0 DC 5
+Cdec VCC 0 10u
+
+Rref1 VCC VREF 100k
+Rref2 VREF 0 100k
+Cref VREF 0 10u
+
+C1 VIN NIN 470n
+Rbias NIN VREF 100k
+E1 OUT 0 NIN NNEG 1e5
+Rfb OUT NNEG 49k
+Rin NNEG VREF 1k
+
+* Faster anti-aliasing for wider bandwidth
+Rlp OUT VOUT 5k
+Clp VOUT VREF 10n
+
+Cout VOUT ADC_IN 1u
+Radc ADC_IN 0 50k
+
+.ac dec 100 0.1 100k
+.tran 0 2
+
+.control
+run
+* Day 007 note: Designed for improved settling and bandwidth; validate on hardware with intended ADC.
+.endc
+.end
