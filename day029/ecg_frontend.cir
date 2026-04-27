@@ -1,0 +1,37 @@
+* Day 029 front-end demo - magnetometer buffer using AD8422
+.param FHP=0.60 FLP=240
+Bsig VIN 0 V=1m*sin(2*pi*1.2,time) + 0.5m*sin(2*pi*50,time)
+
+* Power rails
+VCC VCC 0 DC 3.3
+Cdec VCC 0 10u
+
+* Mid-rail reference
+Rref1 VCC VREF 100k
+Rref2 VREF 0 100k
+Cref VREF 0 10u
+
+* Input coupling
+C1 VIN NIN 1u
+Rbias NIN VREF 265258
+
+* Non-inverting preamp (~55x)
+* Replace E1 with vendor model for AD8422
+E1 OUT 0 NIN NNEG 1e5
+Rfb OUT NNEG 54000
+Rin NNEG VREF 1000
+
+* Output filter around mid-rail
+Rlp OUT VOUT 10000
+Clp VOUT VREF 6.631e-08
+
+Cout VOUT ADC_IN 1u
+Radc ADC_IN 0 100k
+
+.ac dec 100 0.1 100k
+.tran 0 2
+
+.control
+run
+.endc
+.end
