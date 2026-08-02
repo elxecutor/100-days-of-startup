@@ -21,7 +21,7 @@ export default function About() {
 
           {/* ── Team Roles ── */}
           <div className="card" style={{ marginBottom: 24 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f0f0f5', marginBottom: 16 }}>👥 Founding Team</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f0f0f5', marginBottom: 16 }}>Founding Team</h2>
             <div className="grid-2">
               {[
                 { role: 'CEO / Product', name: 'You (Founder)', focus: 'Vision, customer interviews, product decisions, partnerships', bg: '#1e3a5f', color: '#93c5fd' },
@@ -40,18 +40,17 @@ export default function About() {
 
           {/* ── Operating Culture ── */}
           <div className="card" style={{ marginBottom: 24 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f0f0f5', marginBottom: 16 }}>🧬 Operating Culture</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f0f0f5', marginBottom: 16 }}>Operating Culture</h2>
             <div className="grid-2">
               {[
-                { icon: '🎯', title: 'Customer Obsession', desc: 'Every decision starts with "does this help the customer design a better antenna?"' },
-                { icon: '⚡', title: 'Speed Over Polish', desc: 'Ship rough, iterate fast. No feature takes longer than 2 weeks.' },
-                { icon: '📊', title: 'Radical Transparency', desc: 'All metrics (MRR, churn, sims/week) shared with the whole team.' },
-                { icon: '📖', title: 'Learning Culture', desc: 'Weekly "what did we learn" session. Failures are shared, not hidden.' },
-                { icon: '🏗️', title: 'No Bureaucracy', desc: 'One Slack channel. One 15-min standup/week. Decisions in hours, not days.' },
-                { icon: '👤', title: 'Radical Accountability', desc: 'Every task has one owner. No shared responsibility.' },
+                { title: 'Customer Obsession', desc: 'Every decision starts with "does this help the customer design a better antenna?"' },
+                { title: 'Speed Over Polish', desc: 'Ship rough, iterate fast. No feature takes longer than 2 weeks.' },
+                { title: 'Radical Transparency', desc: 'All metrics (MRR, churn, sims/week) shared with the whole team.' },
+                { title: 'Learning Culture', desc: 'Weekly "what did we learn" session. Failures are shared, not hidden.' },
+                { title: 'No Bureaucracy', desc: 'One Slack channel. One 15-min standup/week. Decisions in hours, not days.' },
+                { title: 'Radical Accountability', desc: 'Every task has one owner. No shared responsibility.' },
               ].map((c, i) => (
                 <div key={i} style={{ display: 'flex', gap: 12 }}>
-                  <span style={{ fontSize: 20 }}>{c.icon}</span>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: '#f0f0f5' }}>{c.title}</div>
                     <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{c.desc}</div>
@@ -63,7 +62,7 @@ export default function About() {
 
           {/* ── Lean Startup Canvas (Step 9) ── */}
           <div className="card">
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f0f0f5', marginBottom: 16 }}>📋 Lean Startup Canvas (Step 9)</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#f0f0f5', marginBottom: 16 }}>Lean Startup Canvas (Step 9)</h2>
             {[
               { section: 'Problem', content: 'Antenna tools cost $15k-$50k/seat. Desktop-locked. No collaboration. No real-world feedback loop.' },
               { section: 'Solution', content: 'Cloud-native antenna simulation. Browser-based. Team sharing. Post-install performance monitoring.' },

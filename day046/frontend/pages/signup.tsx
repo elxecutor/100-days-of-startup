@@ -1,16 +1,26 @@
 import { useState } from 'react'
+import type { ChangeEvent, FormEvent } from 'react'
+import type { TokenResponse } from '../lib/types'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+interface SignupForm {
+  email: string
+  password: string
+  full_name: string
+  company: string
+  role: string
+}
+
 export default function Signup() {
-  const [form, setForm] = useState({ email: '', password: '', full_name: '', company: '', role: '' })
+  const [form, setForm] = useState<SignupForm>({ email: '', password: '', full_name: '', company: '', role: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(1)
 
-  const update = (k) => (e) => setForm({ ...form, [k]: e.target.value })
+  const update = (k: keyof SignupForm) => (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm({ ...form, [k]: e.target.value })
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
     setError('')
@@ -21,12 +31,12 @@ export default function Signup() {
         body: JSON.stringify(form),
       })
       if (!res.ok) { const err = await res.json(); throw new Error(err.detail || 'Signup failed') }
-      const data = await res.json()
+      const data = (await res.json()) as TokenResponse
       localStorage.setItem('af_token', data.access_token)
       localStorage.setItem('af_user', JSON.stringify(data.user))
       window.location.href = '/dashboard'
     } catch (err) {
-      setError(err.message)
+      setError((err as Error).message)
     } finally {
       setLoading(false)
     }
@@ -115,7 +125,7 @@ export default function Signup() {
               <div style={{ display: 'flex', gap: 8 }}>
                 <button type="button" className="btn btn-secondary" style={{ flex: 1, justifyContent: 'center' }} onClick={() => setStep(2)}>Back</button>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }} disabled={loading}>
-                  {loading ? 'Creating account...' : 'Start Trial →'}
+                  {loading ? 'Creating account...' : 'Start Trial'}
                 </button>
               </div>
             </>

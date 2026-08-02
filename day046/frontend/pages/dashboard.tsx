@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react'
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, LineChart, Line } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts'
+import type { User, Simulation, SimulationListResponse } from '../lib/types'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+interface Kpi {
+  label: string
+  value: string | number
+  target: string
+  color: string
+}
+
 export default function Dashboard() {
-  const [user, setUser] = useState(null)
-  const [sims, setSims] = useState([])
+  const [user, setUser] = useState<User | null>(null)
+  const [sims, setSims] = useState<Simulation[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
 
@@ -14,9 +22,9 @@ export default function Dashboard() {
     if (!token) { window.location.href = '/login'; return }
     fetch(`${API}/me`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
-      .then(u => { setUser(u); return fetch(`${API}/simulations?page=1&size=50`, { headers: { Authorization: `Bearer ${token}` } }) })
+      .then(u => { setUser(u as User); return fetch(`${API}/simulations?page=1&size=50`, { headers: { Authorization: `Bearer ${token}` } }) })
       .then(r => r.json())
-      .then(d => setSims(d.items || []))
+      .then((d: SimulationListResponse) => setSims(d.items || []))
       .catch(() => { localStorage.removeItem('af_token'); window.location.href = '/login' })
       .finally(() => setLoading(false))
   }, [])
@@ -30,11 +38,11 @@ export default function Dashboard() {
   const thisWeek = sims.filter(s => Date.now() - new Date(s.created_at).getTime() < 7 * 86400000)
 
   // ── KPIs (Step 20) ──
-  const kpis = [
-    { label: 'North Star: Sims/Week', value: thisWeek.length, target: 'Target: 5+', color: '#60a5fa', icon: '⭐' },
-    { label: 'Activation Rate', value: completed.length > 0 ? `${Math.round(completed.length / Math.max(sims.length, 1) * 100)}%` : '0%', target: 'Target: >80%', color: '#34d399', icon: '✅' },
-    { label: 'Sim Success Rate', value: sims.length > 0 ? `${Math.round(completed.length / Math.max(sims.length, 1) * 100)}%` : '0%', target: 'Target: >95%', color: completed.length / Math.max(sims.length, 1) > 0.9 ? '#34d399' : '#fbbf24', icon: '📊' },
-    { label: 'Sims Remaining', value: user.simulations_remaining, target: `Plan: ${user.plan}`, color: user.simulations_remaining > 10 ? '#34d399' : '#f87171', icon: '⚡' },
+  const kpis: Kpi[] = [
+    { label: 'North Star: Sims/Week', value: thisWeek.length, target: 'Target: 5+', color: '#60a5fa' },
+    { label: 'Activation Rate', value: completed.length > 0 ? `${Math.round(completed.length / Math.max(sims.length, 1) * 100)}%` : '0%', target: 'Target: >80%', color: '#34d399' },
+    { label: 'Sim Success Rate', value: sims.length > 0 ? `${Math.round(completed.length / Math.max(sims.length, 1) * 100)}%` : '0%', target: 'Target: >95%', color: completed.length / Math.max(sims.length, 1) > 0.9 ? '#34d399' : '#fbbf24' },
+    { label: 'Sims Remaining', value: user.simulations_remaining, target: `Plan: ${user.plan}`, color: user.simulations_remaining > 10 ? '#34d399' : '#f87171' },
   ]
 
   const chartData = completed.slice(0, 30).reverse().map(s => ({
@@ -79,7 +87,7 @@ export default function Dashboard() {
         <div style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <h1 style={{ fontSize: 20, fontWeight: 700, color: '#f0f0f5' }}>
-              ⭐ Dashboard — Your Antenna Operations Center
+              Dashboard — Your Antenna Operations Center
             </h1>
             <a href="/simulate" className="btn btn-primary" style={{ fontSize: 13, padding: '8px 18px' }}>
               + Run Simulation
@@ -94,7 +102,6 @@ export default function Dashboard() {
         <div className="grid-4" style={{ marginBottom: 24 }}>
           {kpis.map((k, i) => (
             <div key={i} className="card" style={{ textAlign: 'center', padding: '16px 20px' }}>
-              <div style={{ fontSize: 20, marginBottom: 4 }}>{k.icon}</div>
               <div style={{ fontSize: 24, fontWeight: 800, color: k.color }}>{k.value}</div>
               <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{k.label}</div>
               <div style={{ fontSize: 10, color: '#6b7280', marginTop: 4 }}>{k.target}</div>
@@ -127,7 +134,7 @@ export default function Dashboard() {
           <div className="grid-2" style={{ gridTemplateColumns: '2fr 1fr' }}>
             <div className="card">
               <h2 style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f5', marginBottom: 16 }}>
-                📈 Weekly Simulation Trend (Step 20: Track KPIs continuously)
+                Weekly Simulation Trend (Step 20: Track KPIs continuously)
               </h2>
               {weeklyData.some(d => d.sims > 0) ? (
                 <ResponsiveContainer width="100%" height={220}>
@@ -147,18 +154,18 @@ export default function Dashboard() {
 
             <div className="card">
               <h2 style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f5', marginBottom: 16 }}>
-                📋 Retention Status (Step 15: Sales Funnel)
+                Retention Status (Step 15: Sales Funnel)
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[
-                  { step: 'Awareness', status: '✓', detail: 'You found us' },
-                  { step: 'Signup → Trial', status: '✓', detail: `Day ${Math.floor((Date.now() - new Date(user.created_at).getTime()) / 86400000)} of 14` },
-                  { step: 'First Simulation', status: completed.length > 0 ? '✓' : '⋯', detail: completed.length > 0 ? 'Completed' : 'Not yet' },
-                  { step: 'Trial → Paid', status: user.plan !== 'starter' ? '✓' : '○', detail: user.plan === 'starter' ? 'Pending' : 'Converted' },
-                  { step: 'Referral', status: '○', detail: 'Refer a friend → 1 month free' },
+                  { step: 'Awareness', status: 'done', detail: 'You found us' },
+                  { step: 'Signup to Trial', status: 'done', detail: `Day ${Math.floor((Date.now() - new Date(user.created_at).getTime()) / 86400000)} of 14` },
+                  { step: 'First Simulation', status: completed.length > 0 ? 'done' : 'pending', detail: completed.length > 0 ? 'Completed' : 'Not yet' },
+                  { step: 'Trial to Paid', status: user.plan !== 'starter' ? 'done' : 'pending', detail: user.plan === 'starter' ? 'Pending' : 'Converted' },
+                  { step: 'Referral', status: 'pending', detail: 'Refer a friend for 1 month free' },
                 ].map((f, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', background: '#1a1a2e', borderRadius: 8 }}>
-                    <span style={{ color: f.status === '✓' ? '#34d399' : '#6b7280', fontSize: 16 }}>{f.status}</span>
+                    <span style={{ color: f.status === 'done' ? '#34d399' : '#6b7280', fontSize: 16 }}>{f.status === 'done' ? 'Done' : 'Pending'}</span>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13, color: '#d1d5db' }}>{f.step}</div>
                       <div style={{ fontSize: 11, color: '#6b7280' }}>{f.detail}</div>
@@ -174,7 +181,7 @@ export default function Dashboard() {
         {activeTab === 'history' && (
           <div className="card">
             <h2 style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f5', marginBottom: 16 }}>
-              📋 Simulation History (Step 15: Track drop-off points)
+              Simulation History (Step 15: Track drop-off points)
             </h2>
             {sims.length === 0 ? (
               <p style={{ color: '#6b7280', fontSize: 13, textAlign: 'center', padding: 40 }}>No simulations yet.</p>
@@ -223,7 +230,7 @@ export default function Dashboard() {
         {activeTab === 'analytics' && (
           <div>
             <div style={{ marginBottom: 16 }}>
-              <h2 style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f5', marginBottom: 4 }}>📊 KPI Dashboard (Step 20: Continuous Improvement)</h2>
+              <h2 style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f5', marginBottom: 4 }}>KPI Dashboard (Step 20: Continuous Improvement)</h2>
               <p style={{ fontSize: 12, color: '#6b7280' }}>Review weekly. Act on one degraded metric each week.</p>
             </div>
             <div className="grid-2">
@@ -231,9 +238,9 @@ export default function Dashboard() {
                 <h3 style={{ fontSize: 14, fontWeight: 600, color: '#f0f0f5', marginBottom: 12 }}>Simulation Quality Metrics</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {[
-                    { label: 'Total Simulations', value: sims.length, target: 'Grow MoM', status: sims.length > 0 ? 'tracking' : 'waiting' },
-                    { label: 'Completed', value: completed.length, target: '>90%', status: sims.length > 0 && completed.length / sims.length > 0.9 ? 'good' : 'needs work' },
-                    { label: 'Failed', value: failed.length, target: '<5%', status: sims.length > 0 && failed.length / sims.length < 0.05 ? 'good' : 'needs work' },
+                    { label: 'Total Simulations', value: String(sims.length), target: 'Grow MoM', status: sims.length > 0 ? 'tracking' : 'waiting' },
+                    { label: 'Completed', value: String(completed.length), target: '>90%', status: sims.length > 0 && completed.length / sims.length > 0.9 ? 'good' : 'needs work' },
+                    { label: 'Failed', value: String(failed.length), target: '<5%', status: sims.length > 0 && failed.length / sims.length < 0.05 ? 'good' : 'needs work' },
                     { label: 'Avg VSWR (completed)', value: completed.length > 0 ? (completed.reduce((a, s) => a + (s.result?.vswr || 0), 0) / completed.length).toFixed(2) : '—', target: '1.0-2.0', status: 'info' },
                     { label: 'Avg Gain (completed)', value: completed.length > 0 ? (completed.reduce((a, s) => a + (s.result?.gain_dbi || 0), 0) / completed.length).toFixed(1) + ' dBi' : '—', target: 'Depends on type', status: 'info' },
                   ].map((m, i) => (
@@ -251,18 +258,18 @@ export default function Dashboard() {
                 <h3 style={{ fontSize: 14, fontWeight: 600, color: '#f0f0f5', marginBottom: 12 }}>Business Metrics</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {[
-                    { label: 'Plan', value: user.plan, target: 'Upsell path: Starter → Pro → Team' },
-                    { label: 'Sims Remaining', value: user.simulations_remaining, target: 'Refill: plan renewal' },
+                    { label: 'Plan', value: user.plan, target: 'Upsell path: Starter > Pro > Team' },
+                    { label: 'Sims Remaining', value: String(user.simulations_remaining), target: 'Refill: plan renewal' },
                     { label: 'Account Age', value: `${Math.floor((Date.now() - new Date(user.created_at).getTime()) / 86400000)} days`, target: 'Retention >30 days' },
                     { label: 'Avg Sims/Day', value: sims.length > 0 ? (sims.length / Math.max(1, Math.floor((Date.now() - new Date(user.created_at).getTime()) / 86400000))).toFixed(1) : '—', target: 'Growing' },
-                    { label: 'Churn Risk', value: thisWeek.length === 0 && sims.length > 0 ? '⚠️ Inactive' : '✅ Active', target: 'Active = 1+ sim/week' },
+                    { label: 'Churn Risk', value: thisWeek.length === 0 && sims.length > 0 ? 'Inactive' : 'Active', target: 'Active = 1+ sim/week' },
                   ].map((m, i) => (
                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#1a1a2e', borderRadius: 6 }}>
                       <div>
                         <div style={{ fontSize: 12, color: '#d1d5db' }}>{m.label}</div>
                         <div style={{ fontSize: 10, color: '#6b7280' }}>{m.target}</div>
                       </div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: m.value.includes('⚠️') ? '#f87171' : m.value.includes('✅') ? '#34d399' : '#9ca3af' }}>{m.value}</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: m.value === 'Inactive' ? '#f87171' : m.value === 'Active' ? '#34d399' : '#9ca3af' }}>{m.value}</div>
                     </div>
                   ))}
                 </div>

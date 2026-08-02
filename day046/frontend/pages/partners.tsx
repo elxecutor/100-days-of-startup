@@ -1,32 +1,44 @@
 import { useState } from 'react'
 
-const TIERS = [
+interface Partner {
+  name: string
+  desc: string
+  benefit: string
+}
+
+interface Tier {
+  tier: string
+  priority: string
+  partners: Partner[]
+}
+
+const TIERS: Tier[] = [
   {
     tier: 'Tier 1 — Distribution', priority: 'High',
     partners: [
-      { name: 'Hardware Accelerators', logo: '🚀', desc: 'HAX, Bolt, Hardware Club, Zero to One. Offer free Team plan for portfolio companies in exchange for newsletter features.', benefit: 'Access to 500+ hardware startups' },
-      { name: 'RF Component Distributors', logo: '🔌', desc: 'Digi-Key, Mouser, Arrow. Cross-promotion: "Buy RF components from us, design with AntennaForge."', benefit: 'Distribution to 100k+ engineers' },
-      { name: 'PCB Design Tools', logo: '📐', desc: 'Altium, KiCad, Eagle. Build plugins: "Design your PCB, simulate your antenna without leaving the tool."', benefit: 'Integration into daily workflow' },
+      { name: 'Hardware Accelerators', desc: 'HAX, Bolt, Hardware Club, Zero to One. Offer free Team plan for portfolio companies in exchange for newsletter features.', benefit: 'Access to 500+ hardware startups' },
+      { name: 'RF Component Distributors', desc: 'Digi-Key, Mouser, Arrow. Cross-promotion: "Buy RF components from us, design with AntennaForge."', benefit: 'Distribution to 100k+ engineers' },
+      { name: 'PCB Design Tools', desc: 'Altium, KiCad, Eagle. Build plugins: "Design your PCB, simulate your antenna without leaving the tool."', benefit: 'Integration into daily workflow' },
     ]
   },
   {
     tier: 'Tier 2 — Credibility', priority: 'Medium',
     partners: [
-      { name: 'University Research Labs', logo: '🎓', desc: 'MIT Antenna Lab, Stanford Wireless, TU Delft RF. Free Enterprise plan in exchange for case study and logo.', benefit: 'Academic credibility + case study' },
-      { name: 'Standards Bodies', logo: '📡', desc: 'IEEE Antennas and Propagation Society. Sponsor workshops and webinars.', benefit: 'Industry authority signal' },
+      { name: 'University Research Labs', desc: 'MIT Antenna Lab, Stanford Wireless, TU Delft RF. Free Enterprise plan in exchange for case study and logo.', benefit: 'Academic credibility + case study' },
+      { name: 'Standards Bodies', desc: 'IEEE Antennas and Propagation Society. Sponsor workshops and webinars.', benefit: 'Industry authority signal' },
     ]
   },
   {
     tier: 'Tier 3 — Technical', priority: 'Low',
     partners: [
-      { name: 'Cloud Providers', logo: '☁️', desc: 'AWS Activate, GCP for Startups. Get compute credits to reduce infrastructure costs.', benefit: '$5k-100k in cloud credits' },
-      { name: 'Open Source Community', logo: '🔓', desc: 'OpenEMS project. Contribute upstream, sponsor, get listed as a commercial supporter.', benefit: 'Community goodwill + technical validation' },
+      { name: 'Cloud Providers', desc: 'AWS Activate, GCP for Startups. Get compute credits to reduce infrastructure costs.', benefit: '$5k-100k in cloud credits' },
+      { name: 'Open Source Community', desc: 'OpenEMS project. Contribute upstream, sponsor, get listed as a commercial supporter.', benefit: 'Community goodwill + technical validation' },
     ]
   }
 ]
 
 export default function Partners() {
-  const [expanded, setExpanded] = useState(null)
+  const [expanded, setExpanded] = useState<string | null>(null)
 
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -64,13 +76,12 @@ export default function Partners() {
                     onClick={() => setExpanded(expanded === `${i}-${j}` ? null : `${i}-${j}`)}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <span style={{ fontSize: 24 }}>{p.logo}</span>
                         <div>
                           <h3 style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f5' }}>{p.name}</h3>
                           <p style={{ fontSize: 12, color: '#9ca3af' }}>{p.desc}</p>
                         </div>
                       </div>
-                      <span style={{ fontSize: 12, color: '#60a5fa' }}>{expanded === `${i}-${j}` ? '▲' : '▼'}</span>
+                      <span style={{ fontSize: 12, color: '#60a5fa' }}>{expanded === `${i}-${j}` ? 'Collapse' : 'Expand'}</span>
                     </div>
                     {expanded === `${i}-${j}` && (
                       <div style={{ marginTop: 12, padding: 12, background: '#1a1a2e', borderRadius: 8 }}>

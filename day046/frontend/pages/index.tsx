@@ -2,8 +2,29 @@ import { useState } from 'react'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+const PROBLEM_ITEMS: { id: string; label: string; detail: string }[] = [
+  { id: 'cost', label: 'Too Expensive', detail: 'HFSS: $30k/yr. CST: $20k/yr. AntennaForge: $948/yr.' },
+  { id: 'locked', label: 'Desktop-Locked', detail: 'Run simulations on a remote cluster while you keep working. No machine lock-up.' },
+  { id: 'share', label: 'No Collaboration', detail: 'Share designs via a link instead of emailing ZIP files. Built-in team review.' },
+  { id: 'loop', label: 'No Feedback Loop', detail: 'Upload real VNA measurements and compare against simulation instantly.' },
+]
+
+const PROBLEM_ITEMS_BY_ID: Record<string, string> = {
+  cost: 'Too Expensive',
+  locked: 'Desktop-Locked',
+  share: 'No Collaboration',
+  loop: 'No Feedback Loop',
+}
+
+const PROBLEM_DETAILS_BY_ID: Record<string, string> = {
+  cost: 'HFSS: $30k/yr. CST: $20k/yr. AntennaForge: $948/yr.',
+  locked: 'Run simulations on a remote cluster while you keep working. No machine lock-up.',
+  share: 'Share designs via a link instead of emailing ZIP files. Built-in team review.',
+  loop: 'Upload real VNA measurements and compare against simulation instantly.',
+}
+
 export default function Landing() {
-  const [showProblem, setShowProblem] = useState(null)
+  const [showProblem, setShowProblem] = useState<string | null>(null)
 
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -45,12 +66,7 @@ export default function Landing() {
 
           {/* Problem details expandable */}
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 32 }}>
-            {[
-              { id: 'cost', label: 'Too Expensive', detail: 'HFSS: $30k/yr. CST: $20k/yr. AntennaForge: $948/yr.' },
-              { id: 'locked', label: 'Desktop-Locked', detail: 'Run simulations on a remote cluster while you keep working. No machine lock-up.' },
-              { id: 'share', label: 'No Collaboration', detail: 'Share designs via a link instead of emailing ZIP files. Built-in team review.' },
-              { id: 'loop', label: 'No Feedback Loop', detail: 'Upload real VNA measurements and compare against simulation instantly.' },
-            ].map((p) => (
+            {PROBLEM_ITEMS.map((p) => (
               <div key={p.id}
                 onMouseEnter={() => setShowProblem(p.id)}
                 onMouseLeave={() => setShowProblem(null)}
@@ -62,9 +78,7 @@ export default function Landing() {
           {showProblem && (
             <div style={{ background: '#1e3a5f', border: '1px solid #3b82f6', borderRadius: 8, padding: '12px 20px', marginBottom: 32, maxWidth: 500, margin: '0 auto 32px', fontSize: 13, color: '#bfdbfe' }}>
               {[...new Set(['cost','locked','share','loop'])].filter(p => p === showProblem).map(p => {
-                const items = { cost: 'Too Expensive', locked: 'Desktop-Locked', share: 'No Collaboration', loop: 'No Feedback Loop' }
-                const details = { cost: 'HFSS: $30k/yr. CST: $20k/yr. AntennaForge: $948/yr.', locked: 'Run simulations on a remote cluster while you keep working. No machine lock-up.', share: 'Share designs via a link instead of emailing ZIP files. Built-in team review.', loop: 'Upload real VNA measurements and compare against simulation instantly.' }
-                return <div key={p}>🔴 <strong>{items[p]}:</strong> {details[p]}</div>
+                return <div key={p}><strong>{PROBLEM_ITEMS_BY_ID[p]}:</strong> {PROBLEM_DETAILS_BY_ID[p]}</div>
               })}
             </div>
           )}
@@ -72,7 +86,7 @@ export default function Landing() {
           {/* STEP 5 + 6: Validate WTP — Free Trial + Pricing visible */}
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', maxWidth: 440, margin: '0 auto' }}>
             <a href="/signup" className="btn btn-primary" style={{ fontSize: 15, padding: '12px 28px' }}>
-              Start Free Trial →
+              Start Free Trial
             </a>
             <a href="/pricing" className="btn btn-secondary" style={{ fontSize: 15, padding: '12px 28px' }}>
               See Pricing
@@ -107,18 +121,18 @@ export default function Landing() {
               <tbody>
                 {[
                   { feat: 'Price (per seat/year)', hfss: '$30,000+', cst: '$20,000+', feko: '$15,000+', af: '$948' },
-                  { feat: 'Cloud-native', hfss: '✗', cst: '✗', feko: '✗', af: '✓' },
-                  { feat: 'Team collaboration', hfss: '✗', cst: 'Partial', feko: '✗', af: '✓' },
-                  { feat: 'API/SDK', hfss: '✗', cst: '✗', feko: '✗', af: '✓' },
-                  { feat: 'Real-world feedback loop', hfss: '✗', cst: '✗', feko: '✗', af: '✓' },
-                  { feat: 'Free tier', hfss: '✗', cst: '✗', feko: '✗', af: '✓ (14-day)' },
-                  { feat: 'Education pricing', hfss: 'Partial', cst: 'Partial', feko: 'Partial', af: '✓ $25/mo' },
+                  { feat: 'Cloud-native', hfss: 'No', cst: 'No', feko: 'No', af: 'Yes' },
+                  { feat: 'Team collaboration', hfss: 'No', cst: 'Partial', feko: 'No', af: 'Yes' },
+                  { feat: 'API/SDK', hfss: 'No', cst: 'No', feko: 'No', af: 'Yes' },
+                  { feat: 'Real-world feedback loop', hfss: 'No', cst: 'No', feko: 'No', af: 'Yes' },
+                  { feat: 'Free tier', hfss: 'No', cst: 'No', feko: 'No', af: 'Yes (14-day)' },
+                  { feat: 'Education pricing', hfss: 'Partial', cst: 'Partial', feko: 'Partial', af: 'Yes $25/mo' },
                 ].map((r, i) => (
                   <tr key={i} style={{ borderBottom: '1px solid #14141f' }}>
                     <td style={{ padding: '10px 16px', color: '#d1d5db', fontWeight: 500 }}>{r.feat}</td>
-                    <td style={{ padding: '10px 16px', textAlign: 'center', color: r.hfss === '✗' ? '#6b7280' : '#fca5a5' }}>{r.hfss}</td>
-                    <td style={{ padding: '10px 16px', textAlign: 'center', color: r.cst === '✗' ? '#6b7280' : '#fca5a5' }}>{r.cst}</td>
-                    <td style={{ padding: '10px 16px', textAlign: 'center', color: r.feko === '✗' ? '#6b7280' : '#fca5a5' }}>{r.feko}</td>
+                    <td style={{ padding: '10px 16px', textAlign: 'center', color: r.hfss === 'No' ? '#6b7280' : '#fca5a5' }}>{r.hfss}</td>
+                    <td style={{ padding: '10px 16px', textAlign: 'center', color: r.cst === 'No' ? '#6b7280' : '#fca5a5' }}>{r.cst}</td>
+                    <td style={{ padding: '10px 16px', textAlign: 'center', color: r.feko === 'No' ? '#6b7280' : '#fca5a5' }}>{r.feko}</td>
                     <td style={{ padding: '10px 16px', textAlign: 'center', color: '#34d399', fontWeight: 600 }}>{r.af}</td>
                   </tr>
                 ))}
@@ -139,15 +153,14 @@ export default function Landing() {
           </div>
           <div className="grid-3">
             {[
-              { icon: '🔬', name: 'Independent RF Consultants', pain: 'Billable hours wasted on slow tools', budget: '$50-100/mo', urgency: 'High', behavior: 'Freelance, need fast turnaround, price-sensitive' },
-              { icon: '📡', name: 'IoT Hardware Startups', pain: 'Cannot afford $30k tool licenses', budget: '$30-80/mo', urgency: 'High', behavior: 'Agile teams, cloud-native, need collaboration' },
-              { icon: '🏭', name: 'Mid-size Telecom OEMs', pain: 'Reducing OpEx, scaling design teams', budget: '$200-500/mo', urgency: 'Medium', behavior: 'Need SSO, audit trails, API integration' },
-              { icon: '🎓', name: 'University Research Labs', pain: 'Student access, license server headaches', budget: 'Grant-funded $0-50/mo', urgency: 'Medium', behavior: 'Need education pricing, multi-user' },
-              { icon: '🔧', name: 'Field Installation Engineers', pain: 'No way to verify on-site performance', budget: '$20-40/mo (company-paid)', urgency: 'High', behavior: 'Mobile, need VNA comparison, offline-capable' },
-              { icon: '📻', name: 'Broadcast & Comms Companies', pain: 'Complex antenna arrays, compliance docs', budget: '$500-2000/mo', urgency: 'Low-Medium', behavior: 'Enterprise procurement, need compliance reports' },
+              { name: 'Independent RF Consultants', pain: 'Billable hours wasted on slow tools', budget: '$50-100/mo', urgency: 'High', behavior: 'Freelance, need fast turnaround, price-sensitive' },
+              { name: 'IoT Hardware Startups', pain: 'Cannot afford $30k tool licenses', budget: '$30-80/mo', urgency: 'High', behavior: 'Agile teams, cloud-native, need collaboration' },
+              { name: 'Mid-size Telecom OEMs', pain: 'Reducing OpEx, scaling design teams', budget: '$200-500/mo', urgency: 'Medium', behavior: 'Need SSO, audit trails, API integration' },
+              { name: 'University Research Labs', pain: 'Student access, license server headaches', budget: 'Grant-funded $0-50/mo', urgency: 'Medium', behavior: 'Need education pricing, multi-user' },
+              { name: 'Field Installation Engineers', pain: 'No way to verify on-site performance', budget: '$20-40/mo (company-paid)', urgency: 'High', behavior: 'Mobile, need VNA comparison, offline-capable' },
+              { name: 'Broadcast & Comms Companies', pain: 'Complex antenna arrays, compliance docs', budget: '$500-2000/mo', urgency: 'Low-Medium', behavior: 'Enterprise procurement, need compliance reports' },
             ].map((s, i) => (
               <div key={i} className="card card-hover">
-                <div style={{ fontSize: 24, marginBottom: 8 }}>{s.icon}</div>
                 <h3 style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f5', marginBottom: 8 }}>{s.name}</h3>
                 <div style={{ fontSize: 12, color: '#f87171', marginBottom: 4 }}>Pain: {s.pain}</div>
                 <div style={{ fontSize: 12, color: '#34d399', marginBottom: 4 }}>Budget: {s.budget}</div>
@@ -168,17 +181,16 @@ export default function Landing() {
           <h2 style={{ fontSize: 26, fontWeight: 700, color: '#f0f0f5', marginTop: 8, marginBottom: 32 }}>What you can do right now</h2>
           <div className="grid-4">
             {[
-              { icon: '📐', title: '6 Antenna Types', desc: 'Dipole, patch, helical, monopole, Yagi, loop — with analytical models tuned to published results.' },
-              { icon: '📈', title: 'S-Parameter Sweep', desc: 'Plot S11 across frequency. Find your resonance, measure bandwidth, check impedance match.' },
-              { icon: '📊', title: 'Key Metrics', desc: 'VSWR, return loss, gain, impedance, bandwidth, efficiency — all computed instantly.' },
-              { icon: '🔗', title: 'Team Sharing', desc: 'Share simulation results via link. Your team sees the same plots, no file exports.' },
-              { icon: '🔌', title: 'REST API', desc: 'Automate simulations. Integrate into your CI/CD. Generate API keys from the dashboard.' },
-              { icon: '📉', title: 'Touchstone Export', desc: 'Export S-parameters to .s1p/.s2p format. Import into your system design tool.' },
-              { icon: '🖥️', title: 'Cloud Scheduler', desc: 'Simulations run on our cluster. Close your laptop. Get notified when done.' },
-              { icon: '📋', title: 'Dashboard Analytics', desc: 'Track simulation history, monitor usage, view trends over time.' },
+              { title: '6 Antenna Types', desc: 'Dipole, patch, helical, monopole, Yagi, loop — with analytical models tuned to published results.' },
+              { title: 'S-Parameter Sweep', desc: 'Plot S11 across frequency. Find your resonance, measure bandwidth, check impedance match.' },
+              { title: 'Key Metrics', desc: 'VSWR, return loss, gain, impedance, bandwidth, efficiency — all computed instantly.' },
+              { title: 'Team Sharing', desc: 'Share simulation results via link. Your team sees the same plots, no file exports.' },
+              { title: 'REST API', desc: 'Automate simulations. Integrate into your CI/CD. Generate API keys from the dashboard.' },
+              { title: 'Touchstone Export', desc: 'Export S-parameters to .s1p/.s2p format. Import into your system design tool.' },
+              { title: 'Cloud Scheduler', desc: 'Simulations run on our cluster. Close your laptop. Get notified when done.' },
+              { title: 'Dashboard Analytics', desc: 'Track simulation history, monitor usage, view trends over time.' },
             ].map((f, i) => (
               <div key={i} className="card card-hover" style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 24, marginBottom: 8 }}>{f.icon}</div>
                 <h3 style={{ fontSize: 14, fontWeight: 600, color: '#f0f0f5', marginBottom: 6 }}>{f.title}</h3>
                 <p style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5 }}>{f.desc}</p>
               </div>
@@ -197,10 +209,10 @@ export default function Landing() {
             From awareness to first simulation in under 3 minutes. No install. No credit card.
           </p>
           <a href="/signup" className="btn btn-primary" style={{ fontSize: 16, padding: '14px 36px' }}>
-            Start Free Trial →
+            Start Free Trial
           </a>
           <p style={{ fontSize: 12, color: '#6b7280', marginTop: 12 }}>
-            Awareness → Signup → Free Trial → First Simulation → Upgrade
+            Awareness &gt; Signup &gt; Free Trial &gt; First Simulation &gt; Upgrade
           </p>
         </div>
       </section>

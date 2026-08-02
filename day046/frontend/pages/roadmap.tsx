@@ -1,4 +1,15 @@
-const ROADMAP = [
+type RoadmapStatus = 'completed' | 'in_progress' | 'planned'
+
+interface RoadmapStage {
+  stage: string
+  timeline: string
+  status: RoadmapStatus
+  deliverables: string[]
+  metric: string
+  eta?: string
+}
+
+const ROADMAP: RoadmapStage[] = [
   {
     stage: 'Concept', timeline: 'Week 1-2', status: 'completed',
     deliverables: ['Customer interviews (15+ RF engineers)', 'Problem validation document', 'Competitive analysis matrix'],
@@ -40,8 +51,8 @@ const ROADMAP = [
   },
 ]
 
-const STATUS_COLORS = { completed: '#34d399', in_progress: '#fbbf24', planned: '#6b7280' }
-const STATUS_LABELS = { completed: '✓ Done', in_progress: '⟳ In Progress', planned: '○ Planned' }
+const STATUS_COLORS: Record<RoadmapStatus, string> = { completed: '#34d399', in_progress: '#fbbf24', planned: '#6b7280' }
+const STATUS_LABELS: Record<RoadmapStatus, string> = { completed: 'Done', in_progress: 'In Progress', planned: 'Planned' }
 
 export default function Roadmap() {
   return (
@@ -82,12 +93,11 @@ export default function Roadmap() {
                 {/* Dot */}
                 <div style={{
                   width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-                  background: STATUS_COLORS[r.status] + '20',
                   border: `2px solid ${STATUS_COLORS[r.status]}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 16, zIndex: 1, background: '#0a0a0f',
                 }}>
-                  {r.status === 'completed' ? '✓' : r.status === 'in_progress' ? '⟳' : i + 1}
+                  {i + 1}
                 </div>
 
                 {/* Card */}
