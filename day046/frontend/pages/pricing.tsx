@@ -1,6 +1,18 @@
 import { useState } from 'react'
 
-const PLANS = [
+interface Plan {
+  id: string
+  name: string
+  price: number | null
+  sims: string
+  seats: string
+  popular: boolean
+  segments: string[]
+  features: string[]
+  missing: string[]
+}
+
+const PLANS: Plan[] = [
   {
     id: 'starter', name: 'Starter', price: 79, sims: '50 sims/mo', seats: '1 seat', popular: false,
     segments: ['Independent RF Consultants', 'Students', 'Hobbyists'],
@@ -38,7 +50,7 @@ const PLANS = [
 
 export default function Pricing() {
   const [annual, setAnnual] = useState(false)
-  const [selected, setSelected] = useState(null)
+  const [selected, setSelected] = useState<string | null>(null)
 
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -84,7 +96,7 @@ export default function Pricing() {
           <div className="grid-4" style={{ gap: 16, textAlign: 'left' }}>
             {PLANS.map((plan, i) => {
               const monthlyPrice = plan.price
-              const effectivePrice = annual ? Math.round(monthlyPrice * 0.8) : monthlyPrice
+              const effectivePrice = monthlyPrice !== null ? (annual ? Math.round(monthlyPrice * 0.8) : monthlyPrice) : null
               return (
                 <div key={plan.id} className="card" style={{
                   position: 'relative',
@@ -122,12 +134,12 @@ export default function Pricing() {
                   <ul style={{ listStyle: 'none', flex: 1, marginBottom: 16 }}>
                     {plan.features.map((f, j) => (
                       <li key={j} style={{ padding: '4px 0', fontSize: 12, color: '#d1d5db' }}>
-                        <span style={{ color: '#34d399', marginRight: 6 }}>✓</span>{f}
+                        {f}
                       </li>
                     ))}
                     {plan.missing.map((f, j) => (
                       <li key={j} style={{ padding: '4px 0', fontSize: 12, color: '#4b5563' }}>
-                        <span style={{ color: '#4b5563', marginRight: 6 }}>—</span>{f}
+                        <span style={{ color: '#4b5563', marginRight: 6 }}>-</span>{f}
                       </li>
                     ))}
                   </ul>
@@ -147,7 +159,7 @@ export default function Pricing() {
 
           {/* Step 17: Revenue model detail */}
           <div style={{ marginTop: 40, padding: 24, background: '#14141f', borderRadius: 12, border: '1px solid #1f2937', textAlign: 'left' }}>
-            <h3 style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f5', marginBottom: 12 }}>💰 Revenue Model Details (Step 17)</h3>
+            <h3 style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f5', marginBottom: 12 }}>Revenue Model Details (Step 17)</h3>
             <div className="grid-3" style={{ fontSize: 13, color: '#9ca3af', gap: 20 }}>
               <div>
                 <strong style={{ color: '#d1d5db' }}>Primary:</strong> Tiered monthly subscription

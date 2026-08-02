@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
+import type { ChangeEvent } from 'react'
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts'
+import type { AntennaType, SimulationResult, SweepResponse } from '../lib/types'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-const ANTENNA_TYPES = ['dipole', 'patch', 'helical', 'monopole', 'yagi', 'loop']
+const ANTENNA_TYPES: AntennaType[] = ['dipole', 'patch', 'helical', 'monopole', 'yagi', 'loop']
 
-const DEFAULT_PARAMS = {
+const DEFAULT_PARAMS: Record<AntennaType, Record<string, number>> = {
   dipole: { length_m: 0.5, diameter_m: 0.0025 },
   patch: { width_m: 0.1, length_m: 0.08, substrate_er: 4.4, substrate_height_m: 0.0016 },
   helical: { turns: 10, spacing_m: 0.05, diameter_m: 0.05 },
@@ -13,14 +15,14 @@ const DEFAULT_PARAMS = {
   loop: { radius_m: 0.1, turns: 1 },
 }
 
-const PARAM_LABELS = {
+const PARAM_LABELS: Record<string, string> = {
   length_m: 'Length (m)', diameter_m: 'Diameter (m)',
   width_m: 'Width (m)', substrate_er: 'Substrate εr', substrate_height_m: 'Substrate Height (m)',
   turns: 'Turns', spacing_m: 'Spacing (m)', height_m: 'Height (m)',
   elements: 'Elements', boom_length_m: 'Boom Length (m)', radius_m: 'Radius (m)',
 }
 
-const ANTENNA_DESCRIPTIONS = {
+const ANTENNA_DESCRIPTIONS: Record<AntennaType, string> = {
   dipole: 'Half-wave dipole. Simple, omnidirectional. Common baseline reference antenna.',
   patch: 'Microstrip patch. Low profile, directional. Used in PCBs and IoT devices.',
   helical: 'Helical/helix. Circular polarization. Used for satellite and GPS.',
@@ -30,19 +32,24 @@ const ANTENNA_DESCRIPTIONS = {
 }
 
 // Step 12: Explicit feature scope
-const SCOPE = {
+const SCOPE: { in_scope: string[]; future: string[]; never: string[] } = {
   in_scope: ['6 antenna types', 'S-parameter sweep', 'VSWR/Return Loss/Gain/Impedance/BW/Efficiency', 'Touchstone export', 'Team sharing via link', 'REST API', 'Cloud scheduler'],
   future: ['3D far-field patterns', 'Optimization engine', 'Real-world VNA feedback loop', 'Custom antenna builder', 'AI-assisted design', 'EM simulation (FEM/FDTD)'],
   never: ['Mobile app', 'Native desktop app', 'Antenna marketplace', 'Custom solver engine'],
 }
 
+interface SweepPoint {
+  freq: string
+  s11: number
+}
+
 export default function Simulate() {
-  const [token, setToken] = useState(null)
-  const [type, setType] = useState('dipole')
+  const [token, setToken] = useState<string | null>(null)
+  const [type, setType] = useState<AntennaType>('dipole')
   const [freqMHz, setFreqMHz] = useState(300)
-  const [params, setParams] = useState(DEFAULT_PARAMS.dipole)
-  const [result, setResult] = useState(null)
-  const [sweepData, setSweepData] = useState(null)
+  const [params, setParams] = useState<Record<string, number>>(DEFAULT_PARAMS.dipole)
+  const [result, setResult] = useState<SimulationResult | null>(null)
+  const [sweepData, setSweepData] = useState<SweepPoint[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [sweepLoading, setSweepLoading] = useState(false)
   const [error, setError] = useState('')
@@ -54,7 +61,7 @@ export default function Simulate() {
     setToken(t)
   }, [])
 
-  const handleTypeChange = (newType) => {
+  const handleTypeChange = (newType: AntennaType) => {
     setType(newType)
     setParams(DEFAULT_PARAMS[newType])
     setResult(null)
@@ -62,7 +69,7 @@ export default function Simulate() {
     setError('')
   }
 
-  const updateParam = (key) => (e) => setParams({ ...params, [key]: parseFloat(e.target.value) || 0 })
+  const updateParam = (key: string) => (e: ChangeEvent<HTMLInputElement>) => setParams({ ...params, [key]: parseFloat(e.target.value) || 0 })
 
   const runSimulation = async () => {
     if (!token) return
@@ -76,10 +83,10 @@ export default function Simulate() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ antenna_type: type, frequency_hz: freqMHz * 1e6, parameters: params }),
       })
-      if (!res.ok) { const err = await res.json(); throw new Error(err.detail || 'Simulation failed') }
-      const data = await res.json()
+      if (!res.ok) { const err = await res.json(); throw new Error((err as { detail?: string }).detail || 'Simulation failed') }
+      const data = (await res.json()) as { result: SimulationResult }
       setResult(data.result)
-    } catch (err) { setError(err.message) }
+    } catch (err) { setError((err as Error).message) }
     finally { setLoading(false) }
   }
 
@@ -93,9 +100,9 @@ export default function Simulate() {
         body: JSON.stringify({ antenna_type: type, frequency_hz: freqMHz * 1e6, parameters: params }),
       })
       if (!res.ok) throw new Error('Sweep failed')
-      const data = await res.json()
+      const data = (await res.json()) as SweepResponse
       setSweepData(data.frequencies_hz.map((f, i) => ({ freq: (f / 1e6).toFixed(1), s11: data.s11_db[i] })))
-    } catch (err) { setError(err.message) }
+    } catch (err) { setError((err as Error).message) }
     finally { setSweepLoading(false) }
   }
 
@@ -114,7 +121,7 @@ export default function Simulate() {
           <button onClick={() => setShowScope(!showScope)} className="btn btn-ghost" style={{ fontSize: 11, padding: '4px 12px' }}>
             {showScope ? 'Hide' : 'Show'} Feature Scope
           </button>
-          <a href="/dashboard" className="btn btn-ghost" style={{ fontSize: 12, padding: '4px 12px' }}>← Back</a>
+          <a href="/dashboard" className="btn btn-ghost" style={{ fontSize: 12, padding: '4px 12px' }}>Back</a>
         </div>
       </nav>
 
@@ -123,19 +130,19 @@ export default function Simulate() {
         <div style={{ background: '#1e3a5f', borderBottom: '1px solid #3b82f6', padding: '12px 24px' }}>
           <div className="container" style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', gap: 32, fontSize: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <div>
-              <span style={{ color: '#34d399', fontWeight: 600 }}>✓ In MVP Scope</span>
+              <span style={{ color: '#34d399', fontWeight: 600 }}>In MVP Scope</span>
               <ul style={{ marginTop: 4, color: '#9ca3af', listStyle: 'none' }}>
                 {SCOPE.in_scope.map(s => <li key={s}>• {s}</li>)}
               </ul>
             </div>
             <div>
-              <span style={{ color: '#fbbf24', fontWeight: 600 }}>⟳ Future</span>
+              <span style={{ color: '#fbbf24', fontWeight: 600 }}>Future</span>
               <ul style={{ marginTop: 4, color: '#9ca3af', listStyle: 'none' }}>
                 {SCOPE.future.map(s => <li key={s}>• {s}</li>)}
               </ul>
             </div>
             <div>
-              <span style={{ color: '#f87171', fontWeight: 600 }}>✗ Never Build</span>
+              <span style={{ color: '#f87171', fontWeight: 600 }}>Never Build</span>
               <ul style={{ marginTop: 4, color: '#9ca3af', listStyle: 'none' }}>
                 {SCOPE.never.map(s => <li key={s}>• {s}</li>)}
               </ul>
@@ -152,7 +159,7 @@ export default function Simulate() {
 
           <div style={{ marginBottom: 16 }}>
             <label className="label">Antenna Type</label>
-            <select className="input" value={type} onChange={e => handleTypeChange(e.target.value)}>
+            <select className="input" value={type} onChange={e => handleTypeChange(e.target.value as AntennaType)}>
               {ANTENNA_TYPES.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
             </select>
             <p style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>{ANTENNA_DESCRIPTIONS[type]}</p>
@@ -177,10 +184,10 @@ export default function Simulate() {
 
           {/* Step 8: Action tied to North Star */}
           <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginBottom: 8 }} onClick={runSimulation} disabled={loading}>
-            {loading ? 'Simulating...' : '⭐ Run Simulation'}
+            {loading ? 'Simulating...' : 'Run Simulation'}
           </button>
           <button className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }} onClick={runSweep} disabled={sweepLoading}>
-            {sweepLoading ? 'Sweeping...' : '📈 S-Parameter Sweep'}
+            {sweepLoading ? 'Sweeping...' : 'S-Parameter Sweep'}
           </button>
           <p style={{ fontSize: 10, color: '#6b7280', textAlign: 'center', marginTop: 8 }}>
             Each successful simulation counts toward your North Star Metric
@@ -191,7 +198,7 @@ export default function Simulate() {
         <div>
           {result && (
             <div className="card" style={{ marginBottom: 24 }}>
-              <h2 style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f5', marginBottom: 16 }}>📊 Simulation Results</h2>
+              <h2 style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f5', marginBottom: 16 }}>Simulation Results</h2>
               <div className="grid-3">
                 {[
                   { label: 'VSWR', value: result.vswr, color: result.vswr < 2 ? '#34d399' : result.vswr < 3 ? '#fbbf24' : '#f87171' },
@@ -216,7 +223,7 @@ export default function Simulate() {
 
           {sweepData && (
             <div className="card" style={{ marginBottom: 24 }}>
-              <h2 style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f5', marginBottom: 16 }}>📈 S-Parameter Sweep (S11 vs Frequency)</h2>
+              <h2 style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f5', marginBottom: 16 }}>S-Parameter Sweep (S11 vs Frequency)</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={sweepData}>
                   <XAxis dataKey="freq" tick={{ fontSize: 10, fill: '#9ca3af' }} label={{ value: 'Frequency (MHz)', position: 'bottom', fill: '#9ca3af', fontSize: 11 }} />
@@ -241,9 +248,9 @@ export default function Simulate() {
                 <p style={{ color: '#6b7280', fontSize: 12, marginTop: 4 }}>Then click <strong style={{ color: '#60a5fa' }}>Run Simulation</strong> to see results here.</p>
               </div>
               <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#9ca3af' }}>
-                <span>⚡ Cloud solver</span>
-                <span>📊 Instant plots</span>
-                <span>🔗 Share results</span>
+                <span>Cloud solver</span>
+                <span>Instant plots</span>
+                <span>Share results</span>
               </div>
             </div>
           )}

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import type { FormEvent } from 'react'
+import type { TokenResponse } from '../lib/types'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -8,18 +10,18 @@ export default function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
     setError('')
     try {
       const res = await fetch(`${API}/auth/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`, { method: 'POST' })
       if (!res.ok) throw new Error('Invalid email or password')
-      const data = await res.json()
+      const data = (await res.json()) as TokenResponse
       localStorage.setItem('af_token', data.access_token)
       localStorage.setItem('af_user', JSON.stringify(data.user))
       window.location.href = '/dashboard'
-    } catch (err) { setError(err.message) }
+    } catch (err) { setError((err as Error).message) }
     finally { setLoading(false) }
   }
 

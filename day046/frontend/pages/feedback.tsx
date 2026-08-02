@@ -1,8 +1,15 @@
 import { useState } from 'react'
+import type { ChangeEvent } from 'react'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-const QUESTIONS = [
+interface Question {
+  id: string
+  q: string
+  placeholder: string
+}
+
+const QUESTIONS: Question[] = [
   { id: 'frustration', q: 'What is the most frustrating part of your current antenna design workflow?', placeholder: 'e.g., waiting for simulations, expensive licenses, sharing designs...' },
   { id: 'feature', q: 'If you could wave a magic wand, what ONE feature would our tool have?', placeholder: 'e.g., AI optimization, real-time collaboration, VNA data import...' },
   { id: 'missing', q: 'What is AntennaForge missing that would make you use it daily?', placeholder: 'e.g., more antenna types, better plots, API docs...' },
@@ -11,12 +18,12 @@ const QUESTIONS = [
 ]
 
 export default function Feedback() {
-  const [selected, setSelected] = useState(null)
-  const [answers, setAnswers] = useState({})
+  const [selected, setSelected] = useState<string | null>(null)
+  const [answers, setAnswers] = useState<Record<string, string>>({})
   const [submitted, setSubmitted] = useState(false)
   const [showFeedback, setShowFeedback] = useState(true)
 
-  const updateAnswer = (id) => (e) => setAnswers({ ...answers, [id]: e.target.value })
+  const updateAnswer = (id: string) => (e: ChangeEvent<HTMLTextAreaElement>) => setAnswers({ ...answers, [id]: e.target.value })
 
   const handleSubmit = () => {
     setSubmitted(true)
@@ -55,22 +62,18 @@ export default function Feedback() {
           {/* The Feedback Loop cycle */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 32, fontSize: 12, color: '#9ca3af' }}>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24 }}>🔨</div>
               <div>Build</div>
             </div>
-            <div style={{ fontSize: 24, color: '#374151' }}>→</div>
+            <div style={{ fontSize: 24, color: '#374151' }}>-</div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24 }}>📊</div>
               <div>Measure</div>
             </div>
-            <div style={{ fontSize: 24, color: '#374151' }}>→</div>
+            <div style={{ fontSize: 24, color: '#374151' }}>-</div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24 }}>📖</div>
               <div>Learn</div>
             </div>
-            <div style={{ fontSize: 24, color: '#374151' }}>→</div>
+            <div style={{ fontSize: 24, color: '#374151' }}>-</div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 24 }}>🔨</div>
               <div>Build</div>
             </div>
           </div>
@@ -84,7 +87,7 @@ export default function Feedback() {
                     <span style={{ color: '#60a5fa', fontWeight: 600, marginRight: 8 }}>Q{i + 1}:</span>
                     {q.q}
                   </div>
-                  {answers[q.id] && <span style={{ color: '#34d399', fontSize: 16 }}>✓</span>}
+                  {answers[q.id] && <span style={{ color: '#34d399', fontSize: 16 }}>Answered</span>}
                 </div>
 
                 {selected === q.id && showFeedback && (
@@ -103,7 +106,7 @@ export default function Feedback() {
           <div style={{ textAlign: 'center', marginTop: 24 }}>
             <button className="btn btn-primary" onClick={handleSubmit} disabled={submitted || Object.keys(answers).length === 0}
               style={{ opacity: Object.keys(answers).length === 0 ? 0.5 : 1 }}>
-              {submitted ? '✓ Submitted — Thank you!' : 'Submit Feedback'}
+              {submitted ? 'Submitted - Thank you!' : 'Submit Feedback'}
             </button>
             <p style={{ fontSize: 11, color: '#6b7280', marginTop: 8 }}>
               {Object.keys(answers).length} of {QUESTIONS.length} answered
@@ -115,7 +118,7 @@ export default function Feedback() {
             <strong style={{ color: '#d1d5db' }}>How we process feedback (Step 10):</strong>
             <ul style={{ marginTop: 6, listStyle: 'none' }}>
               <li>• Weekly triage: Every Monday, we review all feedback from the past week.</li>
-              <li>• Score by impact: Each request gets a score (1-5) for frequency × urgency.</li>
+              <li>• Score by impact: Each request gets a score (1-5) for frequency x urgency.</li>
               <li>• Top 1 goes into next sprint: We ship one improvement per week.</li>
               <li>• Close the loop: If you leave your email, we reply when your feature ships.</li>
             </ul>
