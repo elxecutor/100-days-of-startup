@@ -1,8 +1,10 @@
 import os
+import pathlib
 import secrets
 from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from database import engine, get_db, Base
 from models import User, Simulation, ApiKey, PlanType, SimulationStatus
@@ -205,3 +207,12 @@ def delete_api_key(key_id: str, user: User = Depends(get_current_user), db: Sess
     api_key.is_active = False
     db.commit()
     return {"detail": "API key deleted"}
+
+
+# ── Single-service hosting: serve the exported Next.js site ──
+# The Docker build copies frontend/out → backend/static. API routes above
+# are matched first, so this only serves the website + its assets.
+# Local dev (no ./static dir) is unaffected: API-only, as before.
+STATIC_DIR = pathlib.Path(__file__).parent / "static"
+if STATIC_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="site")

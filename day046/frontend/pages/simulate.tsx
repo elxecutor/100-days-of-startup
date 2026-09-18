@@ -3,7 +3,7 @@ import type { ChangeEvent } from 'react'
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts'
 import type { AntennaType, SimulationResult, SweepResponse } from '../lib/types'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API = process.env.NEXT_PUBLIC_API_URL ?? ''
 const ANTENNA_TYPES: AntennaType[] = ['dipole', 'patch', 'helical', 'monopole', 'yagi', 'loop']
 
 const DEFAULT_PARAMS: Record<AntennaType, Record<string, number>> = {

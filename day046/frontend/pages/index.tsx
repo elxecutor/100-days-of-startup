@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API = process.env.NEXT_PUBLIC_API_URL ?? ''
 
 const PROBLEM_ITEMS: { id: string; label: string; detail: string }[] = [
   { id: 'cost', label: 'Too Expensive', detail: 'HFSS: $30k/yr. CST: $20k/yr. AntennaForge: $948/yr.' },

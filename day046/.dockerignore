@@ -1,0 +1,6 @@
+.next/
+out/
+node_modules/
+__pycache__/
+*.db
+.env.local

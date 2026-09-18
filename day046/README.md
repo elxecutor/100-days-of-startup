@@ -34,3 +34,17 @@ docker compose up
 
 Backend: http://localhost:8000 · API docs: http://localhost:8000/docs
 Frontend: http://localhost:3000
+
+## Deploy — one free service on Render
+
+The app ships as a single Docker container: Next.js is exported to static
+HTML and served by FastAPI (see `Dockerfile`, `backend/main.py` bottom).
+
+1. Push this repo to GitHub.
+2. Render → New → Web Service → select the repo.
+   - Runtime: **Docker**, Dockerfile Path: `day046/Dockerfile`, Plan: **Free**
+3. Env vars: `SECRET_KEY=<long random string>`
+   (SQLite is used inside the container — data survives restarts, resets on redeploy.)
+4. Open the `https://…onrender.com` URL — site + API + docs, all on one address.
+
+Local single-container equivalent: `docker build -f day046/Dockerfile -t antennaforge day046 && docker run -p 8000:8000 antennaforge`.
